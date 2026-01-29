@@ -1,5 +1,4 @@
-# JavaScript: The Hard Parts
-# Introduction
+# JavaScript: The Hard Parts - Introduction
 
 본 문서는 **Frontend Masters**의 Will Sentance 강의를 바탕으로, 자바스크립트의 동작 원리를 깊게 파고들어 단순한 개발자를 넘어 '자율적인 문제 해결 능력을 갖춘 엔지니어'로 성장하는 것을 목표로 합니다.
 

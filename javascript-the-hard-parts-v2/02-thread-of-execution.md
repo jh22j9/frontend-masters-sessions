@@ -1,4 +1,4 @@
-# [Frontend Masters] JavaScript Principles - 1. Thread of Execution
+# JavaScript: The Hard Parts - Thread of Execution
 
 ## 1. 개요
 자바스크립트 엔진이 코드를 실행할 때 발생하는 두 가지 핵심 프로세스를 이해하는 단계입니다. 자바스크립트는 내부적으로 크게 두 가지 기능을 수행합니다.
