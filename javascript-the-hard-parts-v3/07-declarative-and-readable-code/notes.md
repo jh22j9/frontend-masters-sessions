@@ -210,3 +210,109 @@ d) 명령형 코드와 선언적 코드는 완전히 별개의 개념이다
 **메서드(method)** — 예: `const user = { greet: function() { ... } }`에서 `greet`은 `user` 객체의 메서드입니다.
 
 </details>
+
+---
+
+## Q&A
+
+<details>
+<summary>리액트에서 "더 선언적으로 작성하라"는 코드 리뷰 피드백을 받는 대표적인 케이스는?</summary>
+
+본질적으로 <b>"상태(state)로 표현할 수 있는 것을 명령형 코드로 처리하고 있다"</b>는 의미입니다. 실무에서 자주 지적되는 패턴은 다음과 같습니다.
+
+### 1. `useRef` + `useEffect`로 DOM 직접 조작
+
+```jsx
+// 🚫 명령형
+useEffect(() => {
+  if (isOpen) ref.current.style.display = 'block';
+  else ref.current.style.display = 'none';
+}, [isOpen]);
+
+// ✅ 선언적
+<div className={isOpen ? 'modal visible' : 'modal'}>
+```
+
+### 2. 파생 상태(derived state)를 `useState` + `useEffect`로 관리
+
+```jsx
+// 🚫 명령형 - state 동기화를 위한 useEffect
+const [total, setTotal] = useState(0);
+useEffect(() => {
+  setTotal(items.reduce((sum, i) => sum + i.price, 0));
+}, [items]);
+
+// ✅ 선언적 - 렌더링 중 계산
+const total = items.reduce((sum, i) => sum + i.price, 0);
+```
+
+React 공식 문서 <b>"You Might Not Need an Effect"</b>의 대표 안티패턴입니다.
+
+### 3. flag state 여러 개로 상태 표현
+
+```jsx
+// 🚫 불가능한 상태 조합이 가능해짐
+const [isLoading, setIsLoading] = useState(false);
+const [isError, setIsError] = useState(false);
+const [isSuccess, setIsSuccess] = useState(false);
+
+// ✅ 하나의 union 타입 state로 모델링
+const [status, setStatus] = useState('idle');
+// 'idle' | 'loading' | 'success' | 'error'
+```
+
+<b>불가능한 상태를 표현 불가능하게</b> 만드는 것이 핵심입니다.
+
+### 4. 폼 리셋을 `useEffect`로 처리
+
+```jsx
+// 🚫 prop 변화 시 state 초기화
+useEffect(() => {
+  setName('');
+  setEmail('');
+}, [userId]);
+
+// ✅ key prop으로 컴포넌트 재생성
+<ProfileForm key={userId} userId={userId} />
+```
+
+"리셋해라"를 명령하지 않고, "이건 다른 폼이다"라고 선언합니다.
+
+### 5. `for` 루프로 리스트 조작
+
+```jsx
+// 🚫 명령형
+const filtered = [];
+for (let i = 0; i < users.length; i++) {
+  if (users[i].active) filtered.push(users[i]);
+}
+
+// ✅ 선언적 - 고차 함수
+const filtered = users.filter(u => u.active);
+```
+
+### 6. state chaining (state가 state를 유발)
+
+```jsx
+// 🚫 명령형
+useEffect(() => {
+  setFullName(`${firstName} ${lastName}`);
+}, [firstName, lastName]);
+
+// ✅ 선언적
+const fullName = `${firstName} ${lastName}`;
+```
+
+### 핵심 원칙
+
+| 신호 | 의심할 점 |
+|---|---|
+| `useRef` + `style`/`classList` 조작 | 상태로 className 결정하면 되지 않나? |
+| `useEffect`로 state 동기화 | 렌더링 중 계산으로 충분하지 않나? |
+| `useEffect`로 state 초기화 | `key` prop으로 해결되지 않나? |
+| flag state 여러 개 | 하나의 union 타입 state로 묶을 수 있지 않나? |
+| `for` / `while` 루프 | `map`/`filter`/`reduce`로 쓸 수 있지 않나? |
+
+한 문장으로 요약하면, <b>"UI = f(state)라는 등식을 최대한 지키고, React가 대신 할 수 있는 일을 직접 하지 말라"</b>는 이야기입니다.
+
+</details>
